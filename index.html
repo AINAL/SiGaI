@@ -3,8 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0B0C10">
+<meta name="theme-color" content="#E9EFFF">
 <title>SIGAI — Sifir Garis Itamta</title>
+<link rel="apple-touch-icon" href="icon.png">
+<link rel="icon" type="image/png" href="icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
@@ -14,7 +16,7 @@
   --bg:#E9EFFF; --blob1:#BFD4FF; --blob2:#FFD9E8;
   --card:#FFFFFF; --card2:#F2F5FD;
   --ink:#101426; --ink2:#6C748C; --hair:rgba(16,20,38,.09);
-  --line:#141A2E; --dot:#3B6BFF; --hot:#F0453A; --go:#12A150;
+  --line:#141A2E; --dot:#3B6BFF; --hot:#F0453A; --go:#12A150; --gold:#E5A100;
   --key:#FFFFFF; --keyink:#101426;
   --shadow:0 1px 2px rgba(20,30,70,.06), 0 10px 26px rgba(20,30,70,.09);
   --keyshadow:0 1px 1px rgba(20,30,70,.05), 0 3px 8px rgba(20,30,70,.10);
@@ -25,7 +27,7 @@ html[data-theme="dark"]{
   --bg:#080B14; --blob1:#1B2C57; --blob2:#3A1E38;
   --card:#141A2A; --card2:#1C2436;
   --ink:#EEF1F8; --ink2:#8F98AF; --hair:rgba(238,241,248,.12);
-  --line:#EEF1F8; --dot:#7CA0FF; --hot:#FF6A5E; --go:#3DD68C;
+  --line:#EEF1F8; --dot:#7CA0FF; --hot:#FF6A5E; --go:#3DD68C; --gold:#F4C64D;
   --key:#222B41; --keyink:#EEF1F8;
   --shadow:0 1px 2px rgba(0,0,0,.5), 0 12px 32px rgba(0,0,0,.45);
   --keyshadow:0 1px 2px rgba(0,0,0,.45);
@@ -36,7 +38,7 @@ body{
   min-height:100vh; color:var(--ink); position:relative; overflow-x:hidden;
   font-family:"Nunito",-apple-system,BlinkMacSystemFont,"SF Pro Rounded","Segoe UI",system-ui,sans-serif;
   font-weight:700; -webkit-font-smoothing:antialiased;
-  padding:max(16px,env(safe-area-inset-top)) 16px calc(30px + env(safe-area-inset-bottom));
+  padding:max(16px,env(safe-area-inset-top)) 16px calc(100px + env(safe-area-inset-bottom));
   transition:background .35s ease,color .35s ease;
 }
 body::before,body::after{
@@ -52,16 +54,20 @@ header{display:flex;align-items:center;gap:13px;margin:4px 4px 18px}
   background:linear-gradient(150deg,#4E7BFF,#2E4CE0);box-shadow:0 6px 16px rgba(46,76,224,.38)}
 h1{font-size:26px;font-weight:900;letter-spacing:-.7px;margin:0;line-height:1}
 .sub{font-size:12.5px;color:var(--ink2);font-weight:700;margin-top:4px}
-.theme{margin-left:auto;width:46px;height:46px;border-radius:16px;border:0;background:var(--card);
-  box-shadow:var(--shadow);color:var(--ink);font-size:20px;cursor:pointer;display:grid;place-items:center;
-  transition:transform .12s}
-.theme:active{transform:scale(.9)}
+.statchip{margin-left:auto;background:var(--card);color:var(--ink2);border:0;border-radius:999px;
+  padding:10px 14px;font:inherit;font-weight:800;font-size:12.5px;cursor:pointer;box-shadow:var(--shadow);
+  display:none;align-items:center;gap:5px;transition:transform .1s}
+.statchip:active{transform:scale(.93)}
+
+.view{display:block}
+.view[hidden]{display:none}
 
 .card{background:var(--card);border-radius:var(--r);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
 
 .seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--card2);padding:6px;border-radius:19px;margin-bottom:18px}
-.seg button{border:0;background:transparent;color:var(--ink2);font:inherit;font-size:17px;font-weight:800;
-  padding:13px 8px;border-radius:14px;cursor:pointer;transition:.2s}
+.seg.seg3{grid-template-columns:1fr 1fr 1fr}
+.seg button{border:0;background:transparent;color:var(--ink2);font:inherit;font-size:16px;font-weight:800;
+  padding:13px 6px;border-radius:14px;cursor:pointer;transition:.2s}
 .seg button[aria-pressed="true"]{background:var(--card);color:var(--ink);box-shadow:0 2px 6px rgba(20,30,70,.14)}
 html[data-theme="dark"] .seg button[aria-pressed="true"]{background:var(--key)}
 
@@ -93,7 +99,7 @@ html[data-theme="dark"] .seg button[aria-pressed="true"]{background:var(--key)}
 .answer .a{font-size:33px;font-weight:900;color:var(--go);letter-spacing:-1px;line-height:1}
 
 .paper{background:var(--card2);border-radius:18px;padding:10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
-svg.board{display:block;width:100%;height:auto;min-width:260px}
+svg.board{display:block;width:100%;height:auto;min-width:250px}
 
 .tbl{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px}
 .tbl caption{text-align:left;font-size:10.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
@@ -106,7 +112,79 @@ svg.board{display:block;width:100%;height:auto;min-width:260px}
 .sw{display:inline-block;width:11px;height:11px;border-radius:4px;margin-right:8px;vertical-align:-1px}
 
 .note{font-size:13.5px;color:var(--ink2);line-height:1.6;font-weight:700;margin:0}
-footer{text-align:center;font-size:12px;color:var(--ink2);font-weight:700;line-height:1.65;margin-top:24px;opacity:.9}
+.sectiontitle{font-size:22px;font-weight:900;letter-spacing:-.4px;margin:4px 4px 14px}
+
+/* ---- stepper / free draw controls ---- */
+.drawzone{position:relative;width:100%;aspect-ratio:1/1;background:var(--card2);border-radius:20px;
+  overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 2px var(--hair)}
+.drawzone canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:none}
+.drawzone svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;display:block}
+.stepper-row{display:flex;gap:10px;margin-bottom:4px}
+.stepper{flex:1;background:var(--card2);border-radius:18px;padding:13px 10px;text-align:center}
+.stepper-lbl{font-size:10.5px;color:var(--ink2);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+.stepper-ctl{display:flex;align-items:center;justify-content:center;gap:14px;margin-top:9px}
+.step{width:38px;height:38px;border-radius:12px;border:0;background:var(--card);box-shadow:var(--keyshadow);
+  font-size:19px;font-weight:900;color:var(--ink);cursor:pointer;transition:transform .08s}
+.step:active{transform:scale(.86)}
+.stepper-val{font-size:26px;font-weight:900;min-width:28px}
+
+.bigtap{width:100%;border:0;border-radius:18px;padding:16px;background:linear-gradient(150deg,#4E7BFF,#2E4CE0);
+  color:#fff;font:inherit;font-size:16.5px;font-weight:900;margin-top:14px;box-shadow:0 6px 16px rgba(46,76,224,.35);
+  cursor:pointer;transition:transform .08s}
+.bigtap:active{transform:scale(.97)}
+.bigtap:disabled{opacity:.45;box-shadow:none}
+.ghostbtn{width:100%;border:0;border-radius:16px;padding:12px;background:var(--card2);color:var(--ink2);
+  font:inherit;font-weight:800;font-size:13.5px;margin-top:8px;cursor:pointer;transition:transform .08s}
+.ghostbtn:active{transform:scale(.97)}
+.ghostbtn.hot{color:var(--hot)}
+
+/* ---- history ---- */
+.histrow{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:18px;padding:13px 14px;
+  margin-bottom:9px;box-shadow:var(--shadow)}
+.histbadge{width:38px;height:38px;border-radius:12px;background:var(--card2);display:grid;place-items:center;
+  flex:none;font-size:17px}
+.histmain{flex:1;min-width:0}
+.histeq{font-size:15px;font-weight:900;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.histtime{font-size:11.5px;color:var(--ink2);font-weight:700;margin-top:2px}
+.histdel{border:0;background:transparent;color:var(--ink2);font-size:15px;font-weight:900;cursor:pointer;
+  width:30px;height:30px;border-radius:10px;flex:none}
+.histdel:active{background:var(--card2)}
+.toprow{display:flex;align-items:center;justify-content:space-between;margin:4px 4px 14px}
+.toprow .sectiontitle{margin:0}
+.linkbtn{border:0;background:transparent;color:var(--hot);font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+
+.empty{text-align:center;padding:50px 20px;color:var(--ink2)}
+.empty svg{opacity:.35;margin-bottom:14px}
+.empty p{font-size:14px;font-weight:700;line-height:1.6;margin:0}
+
+/* ---- settings ---- */
+.setgrp{margin-bottom:20px}
+.setgrp h3{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--ink2);margin:0 0 8px 4px}
+.setrow{display:flex;align-items:center;justify-content:space-between;gap:12px;background:var(--card);
+  border-radius:18px;padding:15px 16px;margin-bottom:9px;box-shadow:var(--shadow)}
+.setrow .lab{font-size:15px;font-weight:800}
+.setrow .desc{font-size:11.5px;color:var(--ink2);font-weight:700;margin-top:3px;line-height:1.4}
+.switch{position:relative;width:50px;height:30px;border-radius:999px;background:var(--card2);border:0;
+  cursor:pointer;flex:none;transition:background .2s}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+  background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--dot)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+.aboutcard p{font-size:13.5px;line-height:1.65;color:var(--ink2);font-weight:700;margin:0 0 10px}
+.aboutcard .credit{font-size:13.5px;color:var(--ink);font-weight:800}
+.ver{text-align:center;font-size:11.5px;color:var(--ink2);font-weight:700;opacity:.7;margin-top:6px}
+
+/* ---- bottom tab bar ---- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--card);
+  box-shadow:0 -2px 20px rgba(20,30,70,.10);border-top:1px solid var(--hair)}
+.tabbar-inner{max-width:520px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);
+  padding:8px 8px calc(8px + env(safe-area-inset-bottom))}
+.tabbtn{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;
+  padding:7px 2px;color:var(--ink2);font:inherit;font-size:10.5px;font-weight:800;cursor:pointer;
+  border-radius:14px;transition:color .15s,transform .1s}
+.tabbtn svg{width:23px;height:23px}
+.tabbtn[aria-selected="true"]{color:var(--dot)}
+.tabbtn:active{transform:scale(.9)}
 
 .gline{stroke:var(--line);stroke-width:3;stroke-linecap:round}
 .gline.zero{stroke-dasharray:7 7}
@@ -146,51 +224,170 @@ footer{text-align:center;font-size:12px;color:var(--ink2);font-weight:700;line-h
   </div>
   <div>
     <h1>SIGAI</h1>
-    <div class="sub">Sifir Garis Itamta · darab &amp; bahagi</div>
+    <div class="sub">Sifir Garis Itamta</div>
   </div>
-  <button class="theme" id="theme" aria-label="Tukar mod gelap">🌙</button>
+  <button class="statchip" id="statChip">🏆 <span id="statN">0</span></button>
 </header>
 
-<div class="card">
-  <div class="seg" role="group" aria-label="Pilih operasi">
-    <button id="mDarab" aria-pressed="true">Darab ×</button>
-    <button id="mBahagi" aria-pressed="false">Bahagi ÷</button>
-  </div>
-
-  <div class="slots">
-    <div class="slot" id="s0" role="button" tabindex="0" aria-selected="true">
-      <div class="lbl" id="l0">Nombor pertama</div>
-      <div class="val ghost" id="v0">0</div>
+<!-- ===================== VIEW: KIRA ===================== -->
+<section class="view" id="viewKira">
+  <div class="card">
+    <div class="seg" role="group" aria-label="Pilih operasi">
+      <button id="mDarab" aria-pressed="true">Darab ×</button>
+      <button id="mBahagi" aria-pressed="false">Bahagi ÷</button>
     </div>
-    <div class="op" id="opSign">×</div>
-    <div class="slot" id="s1" role="button" tabindex="0" aria-selected="false">
-      <div class="lbl" id="l1">Nombor kedua</div>
-      <div class="val ghost" id="v1">0</div>
+
+    <div class="slots">
+      <div class="slot" id="s0" role="button" tabindex="0" aria-selected="true">
+        <div class="lbl" id="l0">Nombor pertama</div>
+        <div class="val ghost" id="v0">0</div>
+      </div>
+      <div class="op" id="opSign">×</div>
+      <div class="slot" id="s1" role="button" tabindex="0" aria-selected="false">
+        <div class="lbl" id="l1">Nombor kedua</div>
+        <div class="val ghost" id="v1">0</div>
+      </div>
+    </div>
+
+    <div class="pad">
+      <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
+      <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
+      <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
+      <button class="util" data-k="clear">Padam</button>
+      <button data-k="0">0</button>
+      <button class="util" data-k="back">⌫</button>
+      <button class="go" data-k="go">Lukis Sigai</button>
+    </div>
+
+    <p class="hint" id="hint">Tekan nombor, kemudian tekan <b>Lukis Sigai</b>.</p>
+    <div class="egs" id="egs"></div>
+  </div>
+
+  <div id="out"></div>
+</section>
+
+<!-- ===================== VIEW: LUKIS (free draw) ===================== -->
+<section class="view" id="viewLukis" hidden>
+  <div class="toprow"><h2 class="sectiontitle">Main Bebas</h2></div>
+  <div class="card">
+    <div class="seg" role="group" aria-label="Pilih operasi bebas">
+      <button id="fDarab" aria-pressed="true">Darab ×</button>
+      <button id="fBahagi" aria-pressed="false">Bahagi ÷</button>
+    </div>
+
+    <div class="answer" style="margin-bottom:14px">
+      <span class="q">Jawapan</span><span class="a" id="freeAnsVal">0</span>
+    </div>
+
+    <div class="drawzone" id="dz">
+      <canvas id="ink"></canvas>
+      <svg id="dsvg" class="board" viewBox="0 0 300 300" role="img" aria-label="Ruang lukisan bebas"></svg>
+    </div>
+
+    <p class="hint" id="dHint">Lukis garisan dengan jari — di mana garisan bersilang, satu titik terbentuk.</p>
+
+    <div class="setrow" id="straightRow" style="padding:12px 14px;margin-bottom:10px">
+      <div>
+        <div class="lab" style="font-size:14px">📏 Luruskan garisan</div>
+        <div class="desc">Kemaskan garisan bengkok secara automatik</div>
+      </div>
+      <button class="switch" id="straightSwitch" role="switch" aria-checked="false"></button>
+    </div>
+
+    <div style="display:flex;gap:8px">
+      <button class="ghostbtn" id="dUndo">↺ Padam terakhir</button>
+      <button class="ghostbtn" id="dClear">🗑️ Kosongkan</button>
+    </div>
+
+    <button class="bigtap" id="fSave">💾 Simpan ke Sejarah</button>
+  </div>
+</section>
+<!-- ===================== VIEW: SEJARAH ===================== -->
+<section class="view" id="viewSejarah" hidden>
+  <div class="toprow">
+    <h2 class="sectiontitle">Sejarah</h2>
+    <button class="linkbtn" id="clearHistBtn" style="display:none">Padam semua</button>
+  </div>
+  <div id="histList"></div>
+</section>
+
+<!-- ===================== VIEW: TETAPAN ===================== -->
+<section class="view" id="viewTetapan" hidden>
+  <h2 class="sectiontitle">Tetapan</h2>
+
+  <div class="setgrp">
+    <h3>Paparan</h3>
+    <div class="seg seg3" role="group" aria-label="Tema paparan" style="margin-bottom:0">
+      <button id="th_light" aria-pressed="false">☀️ Terang</button>
+      <button id="th_dark" aria-pressed="false">🌙 Gelap</button>
+      <button id="th_auto" aria-pressed="true">📱 Auto</button>
     </div>
   </div>
 
-  <div class="pad">
-    <button data-k="1">1</button><button data-k="2">2</button><button data-k="3">3</button>
-    <button data-k="4">4</button><button data-k="5">5</button><button data-k="6">6</button>
-    <button data-k="7">7</button><button data-k="8">8</button><button data-k="9">9</button>
-    <button class="util" data-k="clear">Padam</button>
-    <button data-k="0">0</button>
-    <button class="util" data-k="back">⌫</button>
-    <button class="go" data-k="go">Lukis Sigai</button>
+  <div class="setgrp">
+    <h3>Bunyi</h3>
+    <div class="setrow">
+      <div>
+        <div class="lab">Bunyi & animasi</div>
+        <div class="desc">Bunyi ketukan lembut apabila lukis &amp; kira</div>
+      </div>
+      <button class="switch" id="soundSwitch" role="switch" aria-checked="true"></button>
+    </div>
   </div>
 
-  <p class="hint" id="hint">Tekan nombor, kemudian tekan <b>Lukis Sigai</b>.</p>
-  <div class="egs" id="egs"></div>
+  <div class="setgrp">
+    <h3>Data</h3>
+    <div class="card" style="padding:8px">
+      <button class="ghostbtn hot" id="clearAllHistBtn">🗑️ Padam semua sejarah</button>
+    </div>
+  </div>
+
+  <div class="setgrp">
+    <h3>Perihal</h3>
+    <div class="card aboutcard">
+      <p><b>Tahukah kamu?</b> Sigai bermaksud tangga buluh untuk memanjat pokok enau. Hj. Itamta bin Harun mencipta kaedah ini supaya murid boleh "memanjat" ke jawapan darab &amp; bahagi hanya dengan melukis garisan dan mengira titik persilangan — tanpa perlu hafal sifir.</p>
+      <p class="credit">Hj. Itamta bin Harun, PPT</p>
+      <p style="margin:0">Johan Inovasi Negara 2012</p>
+    </div>
+    <div class="ver">SIGAI · dibina dengan ❤️ untuk murid-murid</div>
+  </div>
+</section>
+
 </div>
 
-<div id="out"></div>
-
-<footer>
-  Kaedah Sigai dicipta oleh <b>Hj. Itamta bin Harun</b><br>
-  Johan Inovasi Negara 2012 · belajar darab &amp; bahagi tanpa hafal sifir
-</footer>
-
-</div>
+<!-- ===================== BOTTOM TAB BAR ===================== -->
+<nav class="tabbar" role="tablist" aria-label="Navigasi utama">
+  <div class="tabbar-inner">
+    <button class="tabbtn" data-view="kira" aria-selected="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="3" width="14" height="18" rx="3.2"/><line x1="8" y1="7.2" x2="16" y2="7.2"/>
+        <circle cx="8.6" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1" fill="currentColor" stroke="none"/><circle cx="15.4" cy="12" r="1" fill="currentColor" stroke="none"/>
+        <circle cx="8.6" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="16" r="1" fill="currentColor" stroke="none"/><circle cx="15.4" cy="16" r="1" fill="currentColor" stroke="none"/>
+      </svg>
+      <span>Kira</span>
+    </button>
+    <button class="tabbtn" data-view="lukis" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 20l.9-4.1L15.6 5.2l3.2 3.2L8.1 19.1 4 20z"/><path d="M13.4 6.4l3.2 3.2"/>
+      </svg>
+      <span>Lukis</span>
+    </button>
+    <button class="tabbtn" data-view="sejarah" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12.5" r="7.6"/><path d="M12 8.3v4.4l3 1.9"/>
+      </svg>
+      <span>Sejarah</span>
+    </button>
+    <button class="tabbtn" data-view="tetapan" aria-selected="false">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <line x1="4" y1="7" x2="20" y2="7"/><circle cx="14.5" cy="7" r="2.1" fill="var(--card)"/>
+        <line x1="4" y1="13" x2="20" y2="13"/><circle cx="8.5" cy="13" r="2.1" fill="var(--card)"/>
+        <line x1="4" y1="19" x2="20" y2="19"/><circle cx="16" cy="19" r="2.1" fill="var(--card)"/>
+      </svg>
+      <span>Tetapan</span>
+    </button>
+  </div>
+</nav>
 
 <script>
 (function(){
@@ -200,33 +397,158 @@ const HOUSE=["Sa","Pu","Ra","Ri","PuRi","RaRi","Jt","PuJt","RaJt"];
 const HOUSE_FULL=["Sa","Puluh","Ratus","Ribu","Puluh Ribu","Ratus Ribu","Juta","Puluh Juta","Ratus Juta"];
 const TINT=["#1F4FD8","#12A150","#E58C00","#8B5CF6","#E5484D","#0EA5A5","#D6409F","#6B7280","#4B5563"];
 
-let mode="darab", slot=0, num=["",""], theme="light";
-
 const $=id=>document.getElementById(id);
 const el=(t,a)=>{const n=document.createElementNS(NS,t);for(const k in a)n.setAttribute(k,a[k]);return n;};
 
+/* ---------- storage (works standalone; degrades gracefully in sandboxed previews) ---------- */
+let memStore={};
+function sGet(k){ try{return localStorage.getItem(k);}catch(e){return memStore[k]!==undefined?memStore[k]:null;} }
+function sSet(k,v){ try{localStorage.setItem(k,v);}catch(e){memStore[k]=v;} }
+
+/* ---------- settings ---------- */
+const DEFAULTS={theme:"auto",sound:true};
+function loadSettings(){
+  try{const raw=sGet("sigai_settings");return raw?Object.assign({},DEFAULTS,JSON.parse(raw)):Object.assign({},DEFAULTS);}
+  catch(e){return Object.assign({},DEFAULTS);}
+}
+let settings=loadSettings();
+function saveSettings(){ sSet("sigai_settings",JSON.stringify(settings)); }
+
+/* ---------- sound (Web Audio, no assets) ---------- */
+let audioCtx=null;
+function ensureAudio(){
+  if(!settings.sound) return null;
+  if(!audioCtx){ try{audioCtx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){return null;} }
+  if(audioCtx.state==="suspended") audioCtx.resume();
+  return audioCtx;
+}
+function beep(freq,dur,type,vol,delay){
+  const ctx=ensureAudio(); if(!ctx) return;
+  const t0=ctx.currentTime+(delay||0);
+  const osc=ctx.createOscillator(), g=ctx.createGain();
+  osc.type=type||"sine"; osc.frequency.value=freq;
+  g.gain.setValueAtTime(0,t0);
+  g.gain.linearRampToValueAtTime(vol||0.12,t0+0.012);
+  g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  osc.connect(g).connect(ctx.destination);
+  osc.start(t0); osc.stop(t0+dur+0.03);
+}
+function playTick(){ beep(560,0.05,"square",0.045); }
+function playPop(){ beep(740,0.08,"sine",0.09); }
+function playTada(){ beep(660,0.12,"sine",0.10,0); beep(880,0.12,"sine",0.10,0.09); beep(1180,0.16,"sine",0.11,0.18); }
+
+/* ---------- history ---------- */
+function loadHistory(){ try{const raw=sGet("sigai_history"); return raw?JSON.parse(raw):[];}catch(e){return [];} }
+let history=loadHistory();
+function saveHistory(){ sSet("sigai_history",JSON.stringify(history)); }
+function addHistory(entry){
+  entry.id=Date.now()+"_"+Math.random().toString(36).slice(2,7);
+  entry.ts=Date.now();
+  history.unshift(entry);
+  if(history.length>60) history.length=60;
+  saveHistory();
+  updateStatChip();
+  if(view==="sejarah") renderHistory();
+}
+function relTime(ts){
+  const s=Math.floor((Date.now()-ts)/1000);
+  if(s<10) return "baru saja";
+  if(s<60) return s+" saat lalu";
+  const m=Math.floor(s/60); if(m<60) return m+" minit lalu";
+  const h=Math.floor(m/60); if(h<24) return h+" jam lalu";
+  const d=Math.floor(h/24); if(d<7) return d+" hari lalu";
+  return new Date(ts).toLocaleDateString("ms-MY",{day:"numeric",month:"short"});
+}
+function renderHistory(){
+  const box=$("histList");
+  if(history.length===0){
+    box.innerHTML='<div class="empty">'+
+      '<svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M8.5 3.2v17.6M14.5 3.2v17.6M3.2 8.5h17.6M3.2 14.5h17.6"/></svg>'+
+      '<p>Belum ada sejarah.<br>Cuba kira sesuatu di <b>Kira</b> atau lukis di <b>Lukis</b>!</p></div>';
+    $("clearHistBtn").style.display="none";
+    return;
+  }
+  $("clearHistBtn").style.display="";
+  box.innerHTML="";
+  history.forEach(h=>{
+    const row=document.createElement("div"); row.className="histrow";
+    row.innerHTML='<div class="histbadge">'+(h.kind==="lukis"?"✏️":"🧮")+'</div>'+
+      '<div class="histmain"><div class="histeq">'+h.label+'</div><div class="histtime">'+relTime(h.ts)+'</div></div>'+
+      '<button class="histdel" data-id="'+h.id+'" aria-label="Padam">✕</button>';
+    box.appendChild(row);
+  });
+  box.querySelectorAll(".histdel").forEach(b=>{
+    b.onclick=()=>{ playTick(); history=history.filter(x=>x.id!==b.dataset.id); saveHistory(); updateStatChip(); renderHistory(); };
+  });
+}
+function updateStatChip(){
+  const n=history.length, chip=$("statChip");
+  if(n>0){ chip.style.display="inline-flex"; $("statN").textContent=n; } else chip.style.display="none";
+}
+$("statChip").onclick=()=>{ playTick(); setView("sejarah"); };
+$("clearHistBtn").onclick=()=>{
+  if(history.length&&confirm("Padam semua sejarah?")){ history=[]; saveHistory(); updateStatChip(); renderHistory(); }
+};
+$("clearAllHistBtn").onclick=()=>{
+  if(history.length&&confirm("Padam semua sejarah?")){ history=[]; saveHistory(); updateStatChip(); if(view==="sejarah")renderHistory(); }
+  else if(!history.length){ $("clearAllHistBtn").textContent="Tiada sejarah untuk dipadam"; setTimeout(()=>{$("clearAllHistBtn").textContent="🗑️ Padam semua sejarah";},1300); }
+};
+
 /* ---------- theme ---------- */
-if(window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches) theme="dark";
+function resolveTheme(){
+  if(settings.theme==="auto") return (window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)?"dark":"light";
+  return settings.theme;
+}
 function applyTheme(){
-  const root=document.documentElement;
-  root.setAttribute("data-theme",theme);
+  const eff=resolveTheme(), root=document.documentElement;
+  root.setAttribute("data-theme",eff);
   const bg=getComputedStyle(root).getPropertyValue("--bg").trim();
   root.style.background=bg; document.body.style.background=bg;
   const mt=document.querySelector('meta[name="theme-color"]'); if(mt)mt.setAttribute("content",bg);
-  $("theme").textContent=theme==="dark"?"☀️":"🌙";
-  $("theme").setAttribute("aria-label",theme==="dark"?"Tukar ke mod terang":"Tukar ke mod gelap");
 }
-$("theme").onclick=()=>{theme=theme==="dark"?"light":"dark";applyTheme();};
+if(window.matchMedia){
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{ if(settings.theme==="auto") applyTheme(); });
+}
 applyTheme();
 
-/* ---------- input ---------- */
+/* ---------- settings view wiring ---------- */
+function renderSettings(){
+  ["light","dark","auto"].forEach(t=>$("th_"+t).setAttribute("aria-pressed",settings.theme===t));
+  $("soundSwitch").setAttribute("aria-checked",settings.sound?"true":"false");
+}
+["light","dark","auto"].forEach(t=>{
+  $("th_"+t).onclick=()=>{ settings.theme=t; saveSettings(); applyTheme(); renderSettings(); playTick(); };
+});
+$("soundSwitch").onclick=()=>{
+  settings.sound=!settings.sound; saveSettings(); renderSettings();
+  if(settings.sound) playPop();
+};
+
+/* ---------- tab navigation ---------- */
+const VIEWS=["kira","lukis","sejarah","tetapan"];
+const VIEWID={kira:"viewKira",lukis:"viewLukis",sejarah:"viewSejarah",tetapan:"viewTetapan"};
+let view="kira";
+function setView(v){
+  view=v;
+  VIEWS.forEach(x=>{ $(VIEWID[x]).hidden=(x!==v); });
+  document.querySelectorAll(".tabbtn").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===v));
+  if(v==="sejarah") renderHistory();
+  if(v==="tetapan") renderSettings();
+  if(v==="lukis"){ sizeInk(); redraw(); }
+  window.scrollTo({top:0,behavior:"instant"});
+}
+document.querySelectorAll(".tabbtn").forEach(b=>{ b.onclick=()=>{ playTick(); setView(b.dataset.view); }; });
+
+/* ================= KIRA (guided calculator) ================= */
+let mode="darab", slot=0, num=["",""];
 const EG={darab:[[20,3],[24,301],[1,9],[12,13]],bahagi:[[7,3],[50,2],[86,4],[154,6]]};
+
 function renderEg(){
   const box=$("egs");box.innerHTML="";
   EG[mode].forEach(p=>{
     const b=document.createElement("button");
     b.className="eg";b.textContent=p[0]+(mode==="darab"?" × ":" ÷ ")+p[1];
-    b.onclick=()=>{num=[String(p[0]),String(p[1])];slot=1;paint();run();};
+    b.onclick=()=>{ playTick(); num=[String(p[0]),String(p[1])];slot=1;paint();run(); };
     box.appendChild(b);
   });
 }
@@ -242,8 +564,8 @@ function setMode(m){
     : "Pembahagi guna <b>1 digit</b> (1–9) dahulu.";
   num=["",""];slot=0;$("out").innerHTML="";paint();renderEg();
 }
-$("mDarab").onclick=()=>setMode("darab");
-$("mBahagi").onclick=()=>setMode("bahagi");
+$("mDarab").onclick=()=>{playTick();setMode("darab");};
+$("mBahagi").onclick=()=>{playTick();setMode("bahagi");};
 $("s0").onclick=()=>{slot=0;paint();};
 $("s1").onclick=()=>{slot=1;paint();};
 
@@ -258,7 +580,8 @@ function paint(){
 document.querySelectorAll(".pad button").forEach(b=>{
   b.onclick=()=>{
     const k=b.dataset.k;
-    if(k==="go")return run();
+    if(k==="go"){ playTick(); return run(); }
+    playTick();
     if(k==="clear"){num=["",""];slot=0;$("out").innerHTML="";return paint();}
     if(k==="back"){num[slot]=num[slot].slice(0,-1);return paint();}
     const max=(mode==="bahagi"&&slot===1)?1:4;
@@ -269,7 +592,6 @@ document.querySelectorAll(".pad button").forEach(b=>{
   };
 });
 
-/* ---------- messages ---------- */
 function msg(html){$("out").innerHTML='<div class="card"><p class="note">'+html+'</p></div>';}
 
 function run(){
@@ -278,19 +600,24 @@ function run(){
   if(mode==="darab"){
     if(a===0||b===0)return msg("Sigai darab guna nombor 1 ke atas. Sebarang nombor darab 0 memang jawapannya 0.");
     darab(num[0],num[1]);
+    playTada();
+    addHistory({kind:"kira",label:num[0]+" × "+num[1]+" = "+(a*b).toLocaleString("en-US")});
   }else{
     if(b===0)return msg("Tak boleh bahagi dengan 0 — garisan menegak mesti ada sekurang-kurangnya satu.");
     if(a<b)return msg(a+" lebih kecil daripada "+b+", jadi jawapannya 0 baki "+a+". Cuba nombor dibahagi yang lebih besar.");
     bahagi(num[0],b);
+    playTada();
+    const q=Math.floor(a/b), r=a%b;
+    addHistory({kind:"kira",label:num[0]+" ÷ "+b+" = "+q+(r?" baki "+r:"")});
   }
   $("out").scrollIntoView({behavior:"smooth",block:"start"});
 }
 
-/* ================= SIGAI DARAB ================= */
+/* ---- sigai darab render ---- */
 function darab(as,bs){
   const A=[...as].map(Number), B=[...bs].map(Number);
   const m=A.length,n=B.length;
-  const S=24, GAP=46, PX=52, PY=52;
+  const S=24, GAP=46, PX=66, PY=66;
 
   let x=PX; const gv=A.map(d=>{const c=d===0?1:d;const ls=[];for(let k=0;k<c;k++)ls.push(x+k*S);x+=(c-1)*S+GAP;return{d,ls};});
   let y=PY; const gh=B.map(d=>{const c=d===0?1:d;const ls=[];for(let k=0;k<c;k++)ls.push(y+k*S);y+=(c-1)*S+GAP;return{d,ls};});
@@ -302,7 +629,6 @@ function darab(as,bs){
   svg.setAttribute("aria-label","Rajah sigai darab "+as+" darab "+bs);
   let t=0;
 
-  // house tints per cell
   const rows=[];
   for(let i=0;i<m;i++)for(let j=0;j<n;j++){
     const gi=gv[i],gj=gh[j];
@@ -319,7 +645,6 @@ function darab(as,bs){
     t++;
   }
 
-  // vertical lines
   let d=0;
   gv.forEach(g=>g.ls.forEach(vx=>{
     const L=bot-top;
@@ -337,7 +662,6 @@ function darab(as,bs){
   }));
   const after=d*45+300;
 
-  // digit labels
   gv.forEach(g=>{
     const cx=(g.ls[0]+g.ls[g.ls.length-1])/2;
     const tx=el("text",{x:cx,y:top-10,class:"dlabel anim-fade","text-anchor":"middle",style:"--d:"+after+"ms"});
@@ -349,7 +673,6 @@ function darab(as,bs){
     tx.textContent=g.d;svg.appendChild(tx);
   });
 
-  // intersection dots
   let k=0;
   gv.forEach(gi=>gh.forEach(gj=>{
     if(gi.d===0||gj.d===0)return;
@@ -359,7 +682,6 @@ function darab(as,bs){
     }));
   }));
 
-  // table
   rows.sort((a,b)=>b.p-a.p||a.i-b.i);
   const total=rows.reduce((s,r)=>s+r.nilai,0);
   let tb="";
@@ -374,15 +696,14 @@ function darab(as,bs){
     '<tr><th>Rumah angka</th><th>Titik persilangan</th><th>Nilai</th></tr>'+tb+'</table>');
 }
 
-/* ================= SIGAI BAHAGI ================= */
+/* ---- sigai bahagi render ---- */
 function bahagi(ds,div){
   const D=[...ds].map(Number), n=D.length;
-  const S=32, ROW=30, PX=122, PY=54, GAPH=22;
+  const S=32, ROW=30, PX=122, PY=70, GAPH=22;
 
   const xs=[];for(let k=0;k<div;k++)xs.push(PX+k*S);
   const lastX=xs[xs.length-1];
 
-  // long division by houses
   let carry=0, y=PY, houses=[], qs="";
   for(let i=0;i<n;i++){
     const p=n-1-i, titik=carry*10+D[i], full=Math.floor(titik/div), rem=titik%div;
@@ -397,7 +718,6 @@ function bahagi(ds,div){
   const svg=el("svg",{class:"board",viewBox:"0 0 "+W+" "+H,role:"img"});
   svg.setAttribute("aria-label","Rajah sigai bahagi "+ds+" bahagi "+div);
 
-  // vertical lines = pembahagi
   xs.forEach((vx,k)=>{
     const L=bot-top;
     svg.appendChild(el("line",{x1:vx,y1:top,x2:vx,y2:bot,class:"gline anim-line",
@@ -412,18 +732,15 @@ function bahagi(ds,div){
   let t=0;
   houses.forEach((h,hi)=>{
     let ry=h.y0;
-    // tanda sempang bila digit rumah ini 0
     if(h.digit===0){
       xs.forEach(vx=>svg.appendChild(el("line",{x1:vx-11,y1:ry-13,x2:vx+11,y2:ry-13,
         class:"gline anim-fade",style:"--d:"+(after+t*30)+"ms"})));
       const s=el("text",{x:xs[0]-16,y:ry-9,class:"rlabel anim-fade","text-anchor":"end",style:"--d:"+(after+t*30)+"ms"});
       s.textContent="tanda sempang = 0";svg.appendChild(s);
     }
-    // label rumah
     const rl=el("text",{x:xs[0]-16,y:h.y0+8,class:"hlabel anim-fade","text-anchor":"end",style:"--d:"+(after+t*30)+"ms"});
     rl.textContent=HOUSE[h.p];svg.appendChild(rl);
 
-    // baris penuh
     for(let r=0;r<h.full;r++){
       xs.forEach(vx=>{svg.appendChild(el("circle",{cx:vx,cy:ry,r:6,class:"dot anim-dot",style:"--d:"+(after+100+t*30)+"ms"}));t++;});
       const a=el("path",{d:"M"+(lastX+16)+" "+ry+" H"+(lastX+58)+" m-9 -5 l9 5 l-9 5",class:"arrow anim-fade",style:"--d:"+(after+180+t*30)+"ms"});
@@ -434,7 +751,6 @@ function bahagi(ds,div){
       const v=el("text",{x:lastX+66,y:h.y0+(h.full-1)*ROW/2+6,class:"blabel anim-fade",style:"--d:"+(after+240+t*30)+"ms"});
       v.textContent="= "+(h.full*Math.pow(10,h.p)).toLocaleString("en-US");svg.appendChild(v);
     }
-    // titik baki
     if(h.rem>0){
       for(let c=0;c<h.rem;c++){
         svg.appendChild(el("circle",{cx:xs[c],cy:ry,r:6,class:"dot rest anim-dot",style:"--d:"+(after+100+t*30)+"ms"}));t++;
@@ -458,7 +774,6 @@ function bahagi(ds,div){
     '<tr><th>Rumah angka</th><th>Titik</th><th>Titik selari</th></tr>'+tb+'</table>');
 }
 
-/* ---------- output shell ---------- */
 function show(svg,q,a,tableHTML){
   const card=document.createElement("div");card.className="card";
   const head=document.createElement("div");head.className="answer";
@@ -469,7 +784,258 @@ function show(svg,q,a,tableHTML){
   const out=$("out");out.innerHTML="";out.appendChild(card);
 }
 
+/* ================= LUKIS (true freehand drawing) =================
+   Kid draws whatever stroke they want. We keep the ACTUAL path they drew
+   and compute real geometric intersections between strokes. Nothing is
+   faked or snapped unless they turn "Luruskan" on. */
+const LOG=300;
+let freeOp="darab", straighten=false;
+let strokes=[], strokeId=1, dots=[], bDots=0;
+const inkC=$("ink"), inkX=inkC.getContext("2d"), dsvg=$("dsvg");
+let activePtr=null, rawPts=[], ptrStart=0, ptrMoved=0;
+
+function setFreeOp(o){
+  freeOp=o;
+  $("fDarab").setAttribute("aria-pressed",o==="darab");
+  $("fBahagi").setAttribute("aria-pressed",o==="bahagi");
+  $("straightRow").style.display=o==="darab"?"":"none";
+  strokes=[];strokeId=1;dots=[];bDots=0;dsvg.innerHTML="";
+  sizeInk(); redraw();
+}
+$("fDarab").onclick=()=>{playTick();setFreeOp("darab");};
+$("fBahagi").onclick=()=>{playTick();setFreeOp("bahagi");};
+$("straightSwitch").onclick=()=>{
+  straighten=!straighten;
+  $("straightSwitch").setAttribute("aria-checked",straighten?"true":"false");
+  playTick();
+  strokes.forEach(s=>{ s.pts = straighten ? straightenPts(s.raw) : s.raw.slice(); rebuildPath(s); });
+  redraw();
+};
+
+function sizeInk(){
+  const r=inkC.getBoundingClientRect(); if(!r.width) return;
+  const dpr=window.devicePixelRatio||1;
+  inkC.width=Math.round(r.width*dpr); inkC.height=Math.round(r.height*dpr);
+  inkX.setTransform(dpr,0,0,dpr,0,0);
+}
+window.addEventListener("resize",()=>{ if(view==="lukis") sizeInk(); });
+
+function toLog(e){
+  const r=inkC.getBoundingClientRect();
+  return {cx:e.clientX-r.left, cy:e.clientY-r.top,
+          x:(e.clientX-r.left)/r.width*LOG, y:(e.clientY-r.top)/r.height*LOG};
+}
+
+inkC.addEventListener("pointerdown",e=>{
+  if(activePtr!==null) return;
+  activePtr=e.pointerId; ptrStart=Date.now(); ptrMoved=0;
+  rawPts=[toLog(e)];
+  try{inkC.setPointerCapture(e.pointerId);}catch(err){}
+});
+inkC.addEventListener("pointermove",e=>{
+  if(e.pointerId!==activePtr) return;
+  const p=toLog(e), last=rawPts[rawPts.length-1];
+  const d=Math.hypot(p.x-last.x,p.y-last.y);
+  ptrMoved+=d;
+  if(d>3) rawPts.push(p);
+  paintInk();
+});
+function endPtr(e){
+  if(e.pointerId!==activePtr) return;
+  activePtr=null;
+  const r=inkC.getBoundingClientRect();
+  inkX.clearRect(0,0,r.width,r.height);
+  const pts=rawPts, moved=ptrMoved, dt=Date.now()-ptrStart;
+  rawPts=[];
+  // tap = short + barely moved
+  if(moved<14 && dt<600){ onTap(pts[pts.length-1]); return; }
+  if(pts.length<2) return;
+  commitStroke(pts);
+}
+inkC.addEventListener("pointerup",endPtr);
+inkC.addEventListener("pointercancel",endPtr);
+
+function paintInk(){
+  const r=inkC.getBoundingClientRect();
+  inkX.clearRect(0,0,r.width,r.height);
+  inkX.lineJoin="round"; inkX.lineCap="round"; inkX.lineWidth=6; inkX.globalAlpha=.9;
+  inkX.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--dot").trim()||"#3B6BFF";
+  inkX.beginPath();
+  rawPts.forEach((p,i)=> i===0?inkX.moveTo(p.cx,p.cy):inkX.lineTo(p.cx,p.cy));
+  inkX.stroke();
+}
+
+/* straighten = replace path with a clean line between the two endpoints,
+   locked to the dominant axis so it reads as a proper tally mark */
+function straightenPts(raw){
+  const a=raw[0], b=raw[raw.length-1];
+  const dx=Math.abs(b.x-a.x), dy=Math.abs(b.y-a.y);
+  if(dy>=dx){ const x=(a.x+b.x)/2; return [{x,y:Math.min(a.y,b.y)},{x,y:Math.max(a.y,b.y)}]; }
+  const y=(a.y+b.y)/2; return [{x:Math.min(a.x,b.x),y},{x:Math.max(a.x,b.x),y}];
+}
+function ptsToPath(pts){
+  return pts.map((p,i)=>(i===0?"M":"L")+p.x.toFixed(1)+" "+p.y.toFixed(1)).join(" ");
+}
+function rebuildPath(s){ s.el.setAttribute("d",ptsToPath(s.pts)); }
+
+function commitStroke(raw){
+  if(strokes.length>=14){ toast("Dah cukup banyak garisan!"); return; }
+  const pts = straighten ? straightenPts(raw) : raw.slice();
+  const el0=el("path",{d:ptsToPath(pts),class:"gline",fill:"none"});
+  const len=pathLength(pts);
+  el0.style.strokeDasharray=len; el0.style.strokeDashoffset=len;
+  el0.classList.add("anim-line"); el0.style.setProperty("--d","0ms");
+  dsvg.appendChild(el0);
+  strokes.push({id:strokeId++,raw:raw.slice(),pts,el:el0});
+  playPop();
+  redraw();
+}
+function pathLength(pts){
+  let L=0; for(let i=1;i<pts.length;i++) L+=Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y);
+  return Math.max(L,1);
+}
+
+/* segment intersection */
+function segInt(p1,p2,p3,p4){
+  const d=(p2.x-p1.x)*(p4.y-p3.y)-(p2.y-p1.y)*(p4.x-p3.x);
+  if(Math.abs(d)<1e-9) return null;
+  const t=((p3.x-p1.x)*(p4.y-p3.y)-(p3.y-p1.y)*(p4.x-p3.x))/d;
+  const u=((p3.x-p1.x)*(p2.y-p1.y)-(p3.y-p1.y)*(p2.x-p1.x))/d;
+  if(t<0||t>1||u<0||u>1) return null;
+  return {x:p1.x+t*(p2.x-p1.x), y:p1.y+t*(p2.y-p1.y)};
+}
+function strokeIntersections(a,b){
+  const found=[];
+  for(let i=1;i<a.pts.length;i++)for(let j=1;j<b.pts.length;j++){
+    const p=segInt(a.pts[i-1],a.pts[i],b.pts[j-1],b.pts[j]);
+    if(p){
+      // dedupe points that are basically the same crossing
+      if(!found.some(q=>Math.hypot(q.x-p.x,q.y-p.y)<10)) found.push(p);
+    }
+  }
+  return found;
+}
+function computeDots(){
+  const out=[];
+  for(let i=0;i<strokes.length;i++)for(let j=i+1;j<strokes.length;j++){
+    strokeIntersections(strokes[i],strokes[j]).forEach(p=>{
+      if(!out.some(q=>Math.hypot(q.x-p.x,q.y-p.y)<10)) out.push(p);
+    });
+  }
+  return out;
+}
+
+/* ---- tap: only meaningful in bahagi mode (adds a titik) ---- */
+function onTap(p){
+  if(freeOp!=="bahagi"){ toast("Lukis garisan dengan jari 🖊️ — jangan ketik saja."); return; }
+  if(strokes.length===0){ toast("Lukis garisan pembahagi dulu, baru letak titik."); return; }
+  if(bDots>=90){ toast("Dah cukup banyak titik!"); return; }
+  bDots++; playPop(); redraw();
+}
+
+function redraw(){
+  dsvg.querySelectorAll("circle,text").forEach(n=>n.remove());
+  if(freeOp==="darab") redrawDarab(); else redrawBahagi();
+}
+
+function redrawDarab(){
+  dots=computeDots();
+  dots.forEach((p,i)=>{
+    dsvg.appendChild(el("circle",{cx:p.x,cy:p.y,r:6.5,class:"dot anim-dot",style:"--d:"+(i*35)+"ms"}));
+  });
+  $("freeAnsVal").textContent=dots.length;
+  $("dHint").style.color="";
+  if(strokes.length===0) $("dHint").innerHTML="Lukis garisan dengan jari — di mana garisan bersilang, satu titik terbentuk.";
+  else if(dots.length===0) $("dHint").innerHTML="Garisan belum bersilang. Cuba lukis garisan yang memotong garisan tadi.";
+  else $("dHint").innerHTML=strokes.length+" garisan bersilang sebanyak <b>"+dots.length+"</b> kali = <b>"+dots.length+"</b> titik.";
+}
+
+/* bahagi: strokes are the pembahagi lines; taps drop titik that sit ON the
+   drawn lines, filling row by row — leftover dots are the baki */
+function xAtY(s,y){
+  const pts=s.pts;
+  let best=null,bestD=Infinity;
+  for(let i=1;i<pts.length;i++){
+    const a=pts[i-1],b=pts[i];
+    const lo=Math.min(a.y,b.y),hi=Math.max(a.y,b.y);
+    if(y>=lo&&y<=hi&&Math.abs(b.y-a.y)>1e-6){
+      const t=(y-a.y)/(b.y-a.y); return a.x+t*(b.x-a.x);
+    }
+    [a,b].forEach(p=>{const d=Math.abs(p.y-y); if(d<bestD){bestD=d;best=p.x;}});
+  }
+  return best!==null?best:pts[0].x;
+}
+function redrawBahagi(){
+  const cols=strokes.map(s=>({s,mx:s.pts.reduce((t,p)=>t+p.x,0)/s.pts.length}))
+                    .sort((a,b)=>a.mx-b.mx).map(o=>o.s);
+  const n=cols.length;
+  if(n===0){
+    $("freeAnsVal").textContent="0";
+    $("dHint").style.color="";
+    $("dHint").innerHTML="Lukis beberapa garisan menegak = <b>pembahagi</b>. Kemudian ketik untuk letak titik.";
+    return;
+  }
+  const full=Math.floor(bDots/n), rem=bDots%n;
+  const rowsN=full+(rem>0?1:0);
+  const yTop=44, avail=LOG-yTop-30;
+  const ROW=rowsN>1?Math.min(34,avail/(rowsN-1)):34;
+
+  let k=0;
+  for(let r=0;r<full;r++){
+    const y=yTop+r*ROW;
+    cols.forEach(s=>{
+      dsvg.appendChild(el("circle",{cx:xAtY(s,y),cy:y,r:6.5,class:"dot anim-dot",style:"--d:"+(k*25)+"ms"}));k++;
+    });
+  }
+  if(rem>0){
+    const y=yTop+full*ROW;
+    for(let c=0;c<rem;c++){
+      dsvg.appendChild(el("circle",{cx:xAtY(cols[c],y),cy:y,r:6.5,class:"dot rest anim-dot",style:"--d:"+(k*25)+"ms"}));k++;
+    }
+  }
+  $("freeAnsVal").textContent=full+(rem?" baki "+rem:"");
+  $("dHint").style.color="";
+  $("dHint").innerHTML=bDots===0
+    ? "<b>"+n+"</b> garisan pembahagi siap. Ketik ruang lukisan untuk letak titik."
+    : bDots+" titik ÷ "+n+" garisan = <b>"+full+"</b>"+(rem?" baki <b>"+rem+"</b>":"")+".";
+}
+
+function toast(text){
+  const h=$("dHint");
+  h.style.color="var(--hot)"; h.textContent=text;
+  clearTimeout(window.__toastT);
+  window.__toastT=setTimeout(redraw,1700);
+}
+$("dUndo").onclick=()=>{
+  if(freeOp==="bahagi"&&bDots>0){ bDots--; playTick(); return redraw(); }
+  const s=strokes.pop();
+  if(!s) return toast("Tiada apa-apa untuk dipadam.");
+  s.el.remove(); playTick(); redraw();
+};
+$("dClear").onclick=()=>{
+  strokes=[];strokeId=1;dots=[];bDots=0;dsvg.innerHTML="";
+  playTick(); redraw();
+};
+$("fSave").onclick=()=>{
+  let label=null;
+  if(freeOp==="darab"&&dots.length>0) label=strokes.length+" garisan → "+dots.length+" titik · Lukis Bebas";
+  else if(freeOp==="bahagi"&&bDots>0&&strokes.length>0){
+    const n=strokes.length, full=Math.floor(bDots/n), rem=bDots%n;
+    label=bDots+" ÷ "+n+" = "+full+(rem?" baki "+rem:"")+" · Lukis Bebas";
+  }
+  if(!label) return toast("Lukis sesuatu dulu sebelum simpan.");
+  addHistory({kind:"lukis",label});
+  playTada();
+  const btn=$("fSave"), old=btn.textContent;
+  btn.textContent="✓ Disimpan ke Sejarah"; btn.disabled=true;
+  setTimeout(()=>{btn.textContent=old;btn.disabled=false;},1300);
+};
+
+/* ---------- init ---------- */
 setMode("darab");
+setFreeOp("darab");
+updateStatChip();
+setView("kira");
 })();
 </script>
 </body>
