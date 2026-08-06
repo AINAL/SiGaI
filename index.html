@@ -85,24 +85,48 @@ html[data-theme="dark"] .sub{color:#A8B6E0}
 html[data-theme="dark"] .statchip{background:rgba(38,50,105,.9);color:#D6DFFF}
 .statchip:active{transform:scale(.93)}
 
-@keyframes drift{from{transform:translateX(-130px)}to{transform:translateX(430px)}}
-@keyframes flap{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.35)}}
-@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:1}}
+/* ---- sky motion (slow, low-cost, transform-only) ---- */
+@keyframes drift{from{transform:translateX(-190px)}to{transform:translateX(490px)}}
+@keyframes glide{
+  0%{transform:translateX(-160px);opacity:0}
+  5%{opacity:1}
+  34%{transform:translateX(470px);opacity:1}
+  39%{transform:translateX(510px);opacity:0}
+  100%{transform:translateX(510px);opacity:0}
+}
+@keyframes flap{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.4)}}
+@keyframes twinkle{0%,100%{opacity:.18}50%{opacity:1}}
 @keyframes spinrays{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes sunpulse{0%,100%{opacity:.7;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
 @keyframes shoot{0%{transform:translate(0,0);opacity:0}
-  6%{opacity:1}18%{transform:translate(-120px,70px);opacity:0}100%{opacity:0}}
+  3%{opacity:1}12%{transform:translate(-150px,86px);opacity:0}100%{opacity:0}}
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes leaffall{
+  0%{transform:translate(-70px,0) rotate(-25deg);opacity:0}
+  10%{opacity:.9}
+  90%{opacity:.9}
+  100%{transform:translate(480px,46px) rotate(315deg);opacity:0}
+}
+@keyframes fire{
+  0%,100%{opacity:0;transform:translate(0,0)}
+  22%{opacity:.95}
+  50%{opacity:.25;transform:translate(14px,-12px)}
+  76%{opacity:.9;transform:translate(5px,-22px)}
+}
 
-.cloud{animation:drift linear infinite}
-.flock{animation:drift linear infinite}
+.cloud{animation:drift linear infinite;will-change:transform}
+.flock{animation:glide linear infinite}
 .bird{transform-box:fill-box;transform-origin:center;animation:flap .5s ease-in-out infinite}
 .star{animation:twinkle ease-in-out infinite}
-.rays{transform-box:fill-box;transform-origin:center;animation:spinrays 70s linear infinite}
-.shooter{animation:shoot 9s ease-in infinite}
-.moonbob{transform-box:fill-box;transform-origin:center;animation:bob 6s ease-in-out infinite}
+.rays{transform-box:fill-box;transform-origin:center;animation:spinrays 90s linear infinite}
+.sunhalo{transform-box:fill-box;transform-origin:center;animation:sunpulse 9s ease-in-out infinite}
+.shooter{animation:shoot 34s ease-in infinite}
+.moonbob{transform-box:fill-box;transform-origin:center;animation:bob 7s ease-in-out infinite}
+.leaf{transform-box:fill-box;transform-origin:center;animation:leaffall linear infinite}
+.fly{transform-box:fill-box;transform-origin:center;animation:fire ease-in-out infinite}
 
 @media (prefers-reduced-motion:reduce){
-  .cloud,.flock,.bird,.star,.rays,.shooter,.moonbob{animation:none!important}
+  .cloud,.flock,.bird,.star,.rays,.sunhalo,.shooter,.moonbob,.leaf,.fly{animation:none!important}
 }
 
 .view{display:block}
@@ -182,6 +206,14 @@ svg.board{display:block;width:100%;height:auto;min-width:250px}
 
 .drawzone{position:relative;width:100%;aspect-ratio:1/1;background:var(--card2);border-radius:20px;
   overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 2px var(--hair)}
+.drawzone{overscroll-behavior:contain}
+.drawzone.locked{box-shadow:inset 0 0 0 3px var(--dot)}
+.lockbtn{width:100%;border:2.5px dashed var(--hair);background:transparent;border-radius:15px;
+  padding:11px 12px;font:inherit;font-size:13px;font-weight:800;color:var(--ink2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:11px;transition:.18s}
+.lockbtn[aria-pressed="true"]{border-style:solid;border-color:var(--dot);color:var(--dot);background:var(--card2)}
+.lockbtn:active{transform:scale(.97)}
+body.locked{position:fixed;left:0;right:0;width:100%;overflow:hidden;overscroll-behavior:none}
 .drawzone canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:none}
 .drawzone svg{position:absolute;inset:0;width:100%;height:100%;z-index:1;display:block}
 .stepper-row{display:flex;gap:10px;margin-bottom:4px}
@@ -277,104 +309,155 @@ svg.board{display:block;width:100%;height:auto;min-width:250px}
 </head>
 <body>
 <div class="skybg">
+  <!-- ============ DAY ============ -->
   <svg class="sky day" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice">
     <defs>
       <radialGradient id="sunGlow">
-        <stop offset="40%" stop-color="#FFE27A" stop-opacity=".85"/>
-        <stop offset="100%" stop-color="#FFE27A" stop-opacity="0"/>
+        <stop offset="30%" stop-color="#FFE6A0" stop-opacity=".95"/>
+        <stop offset="64%" stop-color="#FFD97F" stop-opacity=".36"/>
+        <stop offset="100%" stop-color="#FFD97F" stop-opacity="0"/>
       </radialGradient>
-      <g id="cld">
-        <ellipse cx="22" cy="22" rx="22" ry="13"/>
-        <ellipse cx="46" cy="24" rx="18" ry="11"/>
-        <ellipse cx="33" cy="14" rx="16" ry="12"/>
+      <linearGradient id="dayWash" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#7EB6FF" stop-opacity=".34"/>
+        <stop offset="100%" stop-color="#CFE4FF" stop-opacity="0"/>
+      </linearGradient>
+      <!-- paper-cut cloud: bayang -> lapisan belakang -> lapisan depan -->
+      <g id="pcloud">
+        <g fill="#8FB4E8" opacity=".26" transform="translate(2,9)">
+          <ellipse cx="26" cy="24" rx="26" ry="14"/><ellipse cx="54" cy="26" rx="20" ry="12"/><ellipse cx="38" cy="13" rx="19" ry="13"/>
+        </g>
+        <g fill="#CFE0F7">
+          <ellipse cx="26" cy="23" rx="26" ry="14"/><ellipse cx="54" cy="25" rx="20" ry="12"/><ellipse cx="38" cy="12" rx="19" ry="13"/>
+        </g>
+        <g fill="#FFFFFF" transform="translate(-4,-5)">
+          <ellipse cx="26" cy="23" rx="24" ry="13"/><ellipse cx="52" cy="25" rx="18" ry="11"/><ellipse cx="37" cy="13" rx="17" ry="12"/>
+        </g>
       </g>
     </defs>
 
-    <!-- sun = tap to switch to night -->
+    <rect width="400" height="300" fill="url(#dayWash)"/>
+
+    <!-- matahari = tap untuk mod malam -->
     <g class="orb" id="sunBtn" role="button" tabindex="0" aria-label="Tukar ke mod malam">
-      <circle cx="330" cy="40" r="46" fill="url(#sunGlow)"/>
+      <circle class="sunhalo" cx="330" cy="40" r="52" fill="url(#sunGlow)"/>
       <g class="orbart">
-        <g class="rays" stroke="#FFD84D" stroke-width="3" stroke-linecap="round" opacity=".75">
+        <g class="rays" stroke="#FFD84D" stroke-width="3" stroke-linecap="round" opacity=".7">
           <line x1="330" y1="6" x2="330" y2="14"/><line x1="330" y1="66" x2="330" y2="74"/>
           <line x1="296" y1="40" x2="304" y2="40"/><line x1="356" y1="40" x2="364" y2="40"/>
           <line x1="306" y1="16" x2="312" y2="22"/><line x1="348" y1="58" x2="354" y2="64"/>
           <line x1="354" y1="16" x2="348" y2="22"/><line x1="312" y1="58" x2="306" y2="64"/>
         </g>
-        <circle cx="330" cy="40" r="19" fill="#FFD23F"/>
-        <circle cx="324" cy="34" r="6" fill="#FFE690" opacity=".8"/>
+        <circle cx="330" cy="40" r="20" fill="#FFD23F"/>
+        <circle cx="330" cy="40" r="20" fill="none" stroke="#F5B71F" stroke-width="2" opacity=".5"/>
+        <circle cx="323" cy="33" r="6.5" fill="#FFEDA8" opacity=".85"/>
       </g>
-      <circle class="hit" cx="330" cy="40" r="42"/>
+      <circle class="hit" cx="330" cy="40" r="44"/>
     </g>
 
-    <!-- clouds -->
-    <g fill="#FFFFFF" opacity=".95">
-      <g class="cloud" style="animation-duration:48s;animation-delay:-6s">
-        <use href="#cld" x="0" y="14"/>
+    <!-- awan jauh (parallax perlahan) -->
+    <g opacity=".55">
+      <g class="cloud" style="animation-duration:66s;animation-delay:-10s">
+        <g transform="translate(0,34) scale(.52)"><use href="#pcloud"/></g>
       </g>
-      <g class="cloud" style="animation-duration:74s;animation-delay:-30s" opacity=".7" transform="scale(.72)">
-        <use href="#cld" x="120" y="80"/>
-      </g>
-      <g class="cloud" style="animation-duration:62s;animation-delay:-48s" opacity=".85" transform="scale(1.15)">
-        <use href="#cld" x="60" y="52"/>
-      </g>
-      <g class="cloud" style="animation-duration:90s;animation-delay:-15s" opacity=".55" transform="scale(.55)">
-        <use href="#cld" x="330" y="30"/>
+      <g class="cloud" style="animation-duration:80s;animation-delay:-48s">
+        <g transform="translate(0,88) scale(.44)"><use href="#pcloud"/></g>
       </g>
     </g>
 
-    <!-- birds -->
-    <g class="flock" style="animation-duration:34s;animation-delay:-4s"
-       stroke="#3C5C8F" stroke-width="2.1" fill="none" stroke-linecap="round">
-      <g class="bird" style="animation-delay:0s"><path d="M40 44 q6 -6 12 0 q6 -6 12 0"/></g>
-      <g class="bird" style="animation-delay:.16s"><path d="M68 60 q5 -5 10 0 q5 -5 10 0"/></g>
-      <g class="bird" style="animation-delay:.31s"><path d="M18 66 q4.5 -4.5 9 0 q4.5 -4.5 9 0"/></g>
+    <!-- burung: melintas sekali-sekala -->
+    <g class="flock" style="animation-duration:54s;animation-delay:-6s"
+       stroke="#3C5C8F" stroke-width="2" fill="none" stroke-linecap="round" opacity=".7">
+      <g class="bird"><path d="M40 46 q6 -6 12 0 q6 -6 12 0"/></g>
+      <g class="bird" style="animation-delay:.18s"><path d="M70 62 q5 -5 10 0 q5 -5 10 0"/></g>
+      <g class="bird" style="animation-delay:.34s"><path d="M20 68 q4.5 -4.5 9 0 q4.5 -4.5 9 0"/></g>
     </g>
-    <g class="flock" style="animation-duration:58s;animation-delay:-26s"
-       stroke="#4A6B9E" stroke-width="1.7" fill="none" stroke-linecap="round" opacity=".65">
-      <g class="bird" style="animation-delay:.22s"><path d="M150 30 q4 -4 8 0 q4 -4 8 0"/></g>
-      <g class="bird" style="animation-delay:.44s"><path d="M172 40 q3.5 -3.5 7 0 q3.5 -3.5 7 0"/></g>
+    <g class="flock" style="animation-duration:78s;animation-delay:-46s"
+       stroke="#4A6B9E" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".5">
+      <g class="bird" style="animation-delay:.24s"><path d="M150 28 q4 -4 8 0 q4 -4 8 0"/></g>
+      <g class="bird" style="animation-delay:.46s"><path d="M172 38 q3.5 -3.5 7 0 q3.5 -3.5 7 0"/></g>
+    </g>
+
+    <!-- awan dekat (lebih besar & laju) -->
+    <g class="cloud" style="animation-duration:32s;animation-delay:-3s">
+      <g transform="translate(0,12)"><use href="#pcloud"/></g>
+    </g>
+    <g class="cloud" style="animation-duration:44s;animation-delay:-27s">
+      <g transform="translate(0,58) scale(1.18)"><use href="#pcloud"/></g>
+    </g>
+    <g class="cloud" style="animation-duration:38s;animation-delay:-16s" opacity=".9">
+      <g transform="translate(0,26) scale(.8)"><use href="#pcloud"/></g>
     </g>
   </svg>
+
+  <!-- ============ NIGHT ============ -->
   <svg class="sky night" viewBox="0 0 400 300" preserveAspectRatio="xMidYMin slice">
     <defs>
       <radialGradient id="moonGlow">
-        <stop offset="35%" stop-color="#CFE0FF" stop-opacity=".55"/>
-        <stop offset="100%" stop-color="#CFE0FF" stop-opacity="0"/>
+        <stop offset="28%" stop-color="#DCE9FF" stop-opacity=".55"/>
+        <stop offset="62%" stop-color="#9FB8FF" stop-opacity=".2"/>
+        <stop offset="100%" stop-color="#9FB8FF" stop-opacity="0"/>
       </radialGradient>
-      <g id="ncld">
-        <ellipse cx="22" cy="22" rx="22" ry="13"/>
-        <ellipse cx="46" cy="24" rx="18" ry="11"/>
-        <ellipse cx="33" cy="14" rx="16" ry="12"/>
+      <radialGradient id="flyGlow">
+        <stop offset="20%" stop-color="#FFE9A0" stop-opacity=".95"/>
+        <stop offset="100%" stop-color="#FFD24D" stop-opacity="0"/>
+      </radialGradient>
+      <linearGradient id="nightWash" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#0E1745" stop-opacity=".5"/>
+        <stop offset="100%" stop-color="#16214F" stop-opacity="0"/>
+      </linearGradient>
+      <g id="ncloud">
+        <g fill="#070C24" opacity=".5" transform="translate(2,9)">
+          <ellipse cx="26" cy="24" rx="26" ry="14"/><ellipse cx="54" cy="26" rx="20" ry="12"/><ellipse cx="38" cy="13" rx="19" ry="13"/>
+        </g>
+        <g fill="#1B2657">
+          <ellipse cx="26" cy="23" rx="26" ry="14"/><ellipse cx="54" cy="25" rx="20" ry="12"/><ellipse cx="38" cy="12" rx="19" ry="13"/>
+        </g>
+        <g fill="#2F3E7C" transform="translate(-4,-5)">
+          <ellipse cx="26" cy="23" rx="24" ry="13"/><ellipse cx="52" cy="25" rx="18" ry="11"/><ellipse cx="37" cy="13" rx="17" ry="12"/>
+        </g>
+      </g>
+      <g id="pleaf">
+        <path d="M0 0 C10 -10 25 -7 29 4 C19 14 4 11 0 0 Z" fill="#26346B"/>
+        <path d="M0 0 C10 -10 25 -7 29 4" fill="none" stroke="#4B5EA6" stroke-width="1.2" opacity=".65"/>
       </g>
     </defs>
 
-    <!-- stars -->
+    <rect width="400" height="300" fill="url(#nightWash)"/>
+
+    <!-- bintang: kecerahan berbeza -->
     <g fill="#FFFFFF">
-      <circle class="star" cx="40"  cy="26" r="1.6" style="animation-duration:3.1s;animation-delay:0s"/>
-      <circle class="star" cx="82"  cy="52" r="1.2" style="animation-duration:2.4s;animation-delay:.7s"/>
-      <circle class="star" cx="122" cy="18" r="1.8" style="animation-duration:3.8s;animation-delay:1.4s"/>
-      <circle class="star" cx="168" cy="40" r="1.3" style="animation-duration:2.9s;animation-delay:.3s"/>
+      <circle class="star" cx="40"  cy="26" r="1.6" style="animation-duration:3.1s"/>
+      <circle class="star" cx="82"  cy="52" r="1.1" style="animation-duration:2.4s;animation-delay:.7s" opacity=".6"/>
+      <circle class="star" cx="122" cy="18" r="1.9" style="animation-duration:4.2s;animation-delay:1.4s"/>
+      <circle class="star" cx="168" cy="40" r="1.2" style="animation-duration:2.9s;animation-delay:.3s" opacity=".7"/>
       <circle class="star" cx="205" cy="22" r="1.6" style="animation-duration:3.4s;animation-delay:1.9s"/>
-      <circle class="star" cx="246" cy="58" r="1.2" style="animation-duration:2.6s;animation-delay:1.1s"/>
+      <circle class="star" cx="246" cy="58" r="1"   style="animation-duration:2.6s;animation-delay:1.1s" opacity=".55"/>
       <circle class="star" cx="286" cy="30" r="1.5" style="animation-duration:3.6s;animation-delay:.5s"/>
       <circle class="star" cx="60"  cy="74" r="1.3" style="animation-duration:3.0s;animation-delay:2.2s"/>
       <circle class="star" cx="142" cy="68" r="1.5" style="animation-duration:2.7s;animation-delay:1.6s"/>
-      <circle class="star" cx="222" cy="82" r="1.2" style="animation-duration:3.3s;animation-delay:.9s"/>
-      <circle class="star" cx="308" cy="76" r="1.4" style="animation-duration:2.5s;animation-delay:2.6s"/>
-      <circle class="star" cx="18"  cy="48" r="1.1" style="animation-duration:3.9s;animation-delay:1.3s"/>
+      <circle class="star" cx="222" cy="82" r="1"   style="animation-duration:3.3s;animation-delay:.9s" opacity=".5"/>
+      <circle class="star" cx="308" cy="78" r="1.4" style="animation-duration:2.5s;animation-delay:2.6s"/>
+      <circle class="star" cx="18"  cy="48" r="1.1" style="animation-duration:3.9s;animation-delay:1.3s" opacity=".65"/>
       <circle class="star" cx="264" cy="12" r="1.3" style="animation-duration:2.8s;animation-delay:.2s"/>
-      <circle class="star" cx="188" cy="90" r="1.1" style="animation-duration:3.5s;animation-delay:2.9s"/>
+      <circle class="star" cx="188" cy="94" r="1"   style="animation-duration:3.5s;animation-delay:2.9s" opacity=".5"/>
     </g>
 
-    <!-- shooting star -->
-    <g class="shooter" transform="translate(360,18)">
-      <line x1="0" y1="0" x2="26" y2="-15" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity=".9"/>
-      <circle cx="0" cy="0" r="1.9" fill="#FFFFFF"/>
+    <!-- kelip-kelip -->
+    <g>
+      <g class="fly" style="animation-duration:11s;animation-delay:-2s" transform="translate(64,110)">
+        <circle r="6" fill="url(#flyGlow)"/><circle r="1.5" fill="#FFF3C4"/>
+      </g>
+      <g class="fly" style="animation-duration:14s;animation-delay:-7s" transform="translate(196,128)">
+        <circle r="5" fill="url(#flyGlow)"/><circle r="1.3" fill="#FFF3C4"/>
+      </g>
+      <g class="fly" style="animation-duration:9s;animation-delay:-4.5s" transform="translate(288,104)">
+        <circle r="5.5" fill="url(#flyGlow)"/><circle r="1.4" fill="#FFF3C4"/>
+      </g>
     </g>
 
-    <!-- moon = tap to switch to day -->
+    <!-- bulan = tap untuk mod siang -->
     <g class="orb" id="moonBtn" role="button" tabindex="0" aria-label="Tukar ke mod siang">
-      <circle cx="330" cy="42" r="44" fill="url(#moonGlow)"/>
+      <circle cx="330" cy="42" r="50" fill="url(#moonGlow)"/>
       <g class="orbart">
         <g class="moonbob">
           <circle cx="330" cy="42" r="20" fill="#F3F1DE"/>
@@ -386,17 +469,36 @@ svg.board{display:block;width:100%;height:auto;min-width:250px}
       <circle class="hit" cx="330" cy="42" r="42"/>
     </g>
 
-    <!-- night clouds -->
-    <g fill="#2E3C78" opacity=".82">
-      <g class="cloud" style="animation-duration:64s;animation-delay:-10s">
-        <use href="#ncld" x="0" y="20"/>
-      </g>
-      <g class="cloud" style="animation-duration:88s;animation-delay:-44s" opacity=".7" transform="scale(.8)">
-        <use href="#ncld" x="150" y="88"/>
-      </g>
-      <g class="cloud" style="animation-duration:76s;animation-delay:-64s" opacity=".6" transform="scale(1.1)">
-        <use href="#ncld" x="80" y="56"/>
-      </g>
+    <!-- awan malam: sebahagian melintasi bulan -->
+    <g class="cloud" style="animation-duration:70s;animation-delay:-8s" opacity=".9">
+      <g transform="translate(0,20)"><use href="#ncloud"/></g>
+    </g>
+    <g class="cloud" style="animation-duration:96s;animation-delay:-52s" opacity=".7">
+      <g transform="translate(0,88) scale(.8)"><use href="#ncloud"/></g>
+    </g>
+    <g class="cloud" style="animation-duration:58s;animation-delay:-30s" opacity=".85">
+      <g transform="translate(0,34) scale(1.1)"><use href="#ncloud"/></g>
+    </g>
+
+    <!-- daun paper-cut hanyut -->
+    <g class="leaf" style="animation-duration:46s;animation-delay:-5s">
+      <g transform="translate(0,64) scale(.9)"><use href="#pleaf"/></g>
+    </g>
+    <g class="leaf" style="animation-duration:62s;animation-delay:-28s" opacity=".7">
+      <g transform="translate(0,132) scale(.62)"><use href="#pleaf"/></g>
+    </g>
+    <g class="leaf" style="animation-duration:38s;animation-delay:-16s" opacity=".85">
+      <g transform="translate(0,18) scale(.5)"><use href="#pleaf"/></g>
+    </g>
+
+    <!-- bintang jatuh -->
+    <g class="shooter" transform="translate(370,16)">
+      <line x1="0" y1="0" x2="28" y2="-16" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity=".85"/>
+      <circle cx="0" cy="0" r="1.9" fill="#FFFFFF"/>
+    </g>
+    <g class="shooter" style="animation-duration:47s;animation-delay:-21s" transform="translate(250,8)">
+      <line x1="0" y1="0" x2="22" y2="-12" stroke="#DCE9FF" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>
+      <circle cx="0" cy="0" r="1.5" fill="#DCE9FF"/>
     </g>
   </svg>
 </div>
@@ -472,6 +574,10 @@ svg.board{display:block;width:100%;height:auto;min-width:250px}
     <div class="palette" id="palette" role="group" aria-label="Pilih rumah angka"></div>
     <button class="zerochip" id="zeroChip" aria-pressed="false">
       <span class="zline"></span><span id="zeroLbl">Mod 0 — garisan putus-putus</span>
+    </button>
+
+    <button class="lockbtn" id="lockBtn" aria-pressed="false">
+      <span id="lockIcon">🔓</span><span id="lockLbl">Kunci skrin untuk lukis</span>
     </button>
 
     <div class="drawzone" id="dz">
@@ -737,6 +843,7 @@ const VIEWS=["kira","lukis","sejarah","tetapan"];
 const VIEWID={kira:"viewKira",lukis:"viewLukis",sejarah:"viewSejarah",tetapan:"viewTetapan"};
 let view="kira";
 function setView(v){
+  if(typeof setDrawLock==="function") setDrawLock(false);
   view=v;
   VIEWS.forEach(x=>{ $(VIEWID[x]).hidden=(x!==v); });
   document.querySelectorAll(".tabbtn").forEach(b=>b.setAttribute("aria-selected",b.dataset.view===v));
@@ -1058,6 +1165,35 @@ function sizeInk(){
   inkX.setTransform(dpr,0,0,dpr,0,0);
 }
 window.addEventListener("resize",()=>{ if(view==="lukis") sizeInk(); });
+
+/* ---- kunci skrin semasa melukis (elak scroll tidak sengaja) ---- */
+let drawLocked=false, lockScrollY=0, lockTimer=null;
+function setDrawLock(on){
+  on=!!on;
+  if(on===drawLocked) return;
+  drawLocked=on;
+  $("lockBtn").setAttribute("aria-pressed",on?"true":"false");
+  $("dz").classList.toggle("locked",on);
+  $("lockIcon").textContent = on?"\uD83D\uDD12":"\uD83D\uDD13";
+  $("lockLbl").textContent  = on?"Skrin dikunci \u2014 ketik untuk buka":"Kunci skrin untuk lukis";
+  clearTimeout(lockTimer);
+  if(on){
+    $("dz").scrollIntoView({block:"center",behavior:"smooth"});
+    lockTimer=setTimeout(()=>{                 // tunggu smooth-scroll selesai
+      if(!drawLocked) return;
+      lockScrollY=window.scrollY;
+      document.body.style.top=(-lockScrollY)+"px";
+      document.body.classList.add("locked");
+      sizeInk(); redraw();
+    },380);
+  }else{
+    document.body.classList.remove("locked");
+    document.body.style.top="";
+    window.scrollTo(0,lockScrollY);
+    sizeInk(); redraw();
+  }
+}
+$("lockBtn").onclick=()=>{ playTick(); setDrawLock(!drawLocked); };
 
 function toLog(e){
   const r=inkC.getBoundingClientRect();
