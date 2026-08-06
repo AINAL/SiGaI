@@ -161,6 +161,25 @@ svg.board{display:block;width:100%;height:auto;min-width:250px}
 .sectiontitle{font-size:22px;font-weight:900;letter-spacing:-.4px;margin:4px 4px 14px}
 
 /* ---- stepper / free draw controls ---- */
+/* ---- colour palette (rumah angka picker) ---- */
+.palette{display:flex;gap:7px;margin-bottom:11px;flex-wrap:wrap}
+.pchip{flex:1;min-width:64px;border:2.5px solid transparent;background:var(--card2);border-radius:15px;
+  padding:9px 6px 8px;font:inherit;cursor:pointer;transition:.18s;display:flex;
+  flex-direction:column;align-items:center;gap:5px}
+.pchip .pdot{width:20px;height:20px;border-radius:50%;box-shadow:0 2px 5px rgba(0,0,0,.18)}
+.pchip .pname{font-size:11.5px;font-weight:800;color:var(--ink2);letter-spacing:.2px}
+.pchip .pval{font-size:9.5px;font-weight:800;color:var(--ink2);opacity:.65}
+.pchip[aria-pressed="true"]{background:var(--card);box-shadow:0 2px 8px rgba(20,30,70,.16)}
+.pchip[aria-pressed="true"] .pname{color:var(--ink)}
+.pchip:active{transform:scale(.94)}
+.zerochip{width:100%;border:2.5px dashed var(--hair);background:transparent;border-radius:15px;
+  padding:10px 12px;font:inherit;font-size:13px;font-weight:800;color:var(--ink2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:11px;transition:.18s}
+.zerochip[aria-pressed="true"]{border-style:dashed;border-color:var(--dot);color:var(--ink);
+  background:var(--card2)}
+.zerochip:active{transform:scale(.97)}
+.zerochip .zline{width:26px;height:0;border-top:3px dashed currentColor;border-radius:2px}
+
 .drawzone{position:relative;width:100%;aspect-ratio:1/1;background:var(--card2);border-radius:20px;
   overflow:hidden;touch-action:none;box-shadow:inset 0 0 0 2px var(--hair)}
 .drawzone canvas{position:absolute;inset:0;width:100%;height:100%;z-index:2;touch-action:none}
@@ -446,18 +465,25 @@ svg.board{display:block;width:100%;height:auto;min-width:250px}
       <button id="fBahagi" aria-pressed="false">Bahagi ÷</button>
     </div>
 
-    <div class="answer" style="margin-bottom:14px">
-      <span class="q">Jawapan</span><span class="a" id="freeAnsVal">0</span>
+    <div class="answer" style="margin-bottom:12px">
+      <span class="q" id="freeQ">Jawapan</span><span class="a" id="freeAnsVal">0</span>
     </div>
+
+    <div class="palette" id="palette" role="group" aria-label="Pilih rumah angka"></div>
+    <button class="zerochip" id="zeroChip" aria-pressed="false">
+      <span class="zline"></span><span id="zeroLbl">Mod 0 — garisan putus-putus</span>
+    </button>
 
     <div class="drawzone" id="dz">
       <canvas id="ink"></canvas>
       <svg id="dsvg" class="board" viewBox="0 0 300 300" role="img" aria-label="Ruang lukisan bebas"></svg>
     </div>
 
-    <p class="hint" id="dHint">Lukis garisan dengan jari — di mana garisan bersilang, satu titik terbentuk.</p>
+    <p class="hint" id="dHint">Pilih warna rumah angka, kemudian lukis garisan dengan jari.</p>
 
-    <div class="setrow" id="straightRow" style="padding:12px 14px;margin-bottom:10px">
+    <div id="freeBreak"></div>
+
+    <div class="setrow" id="straightRow" style="padding:12px 14px;margin:12px 0 10px">
       <div>
         <div class="lab" style="font-size:14px">📏 Luruskan garisan</div>
         <div class="desc">Kemaskan garisan bengkok secara automatik</div>
@@ -966,22 +992,53 @@ function show(svg,q,a,tableHTML){
   const out=$("out");out.innerHTML="";out.appendChild(card);
 }
 
-/* ================= LUKIS (true freehand drawing) =================
-   Kid draws whatever stroke they want. We keep the ACTUAL path they drew
-   and compute real geometric intersections between strokes. Nothing is
-   faked or snapped unless they turn "Luruskan" on. */
+/* ================= LUKIS (freehand + colour = rumah angka) =================
+   Warna garisan mewakili nilai tempat. Titik persilangan mewakili
+   10^(placeA + placeB) — jadi hijau(pu) × hijau(pu) = titik oren(ratus).
+   Sebab warna yang bawa nilai, kedudukan garisan tak penting langsung. */
 const LOG=300;
-let freeOp="darab", straighten=false;
-let strokes=[], strokeId=1, dots=[], bDots=0;
+const PLACES=[
+  {p:0,name:"Sa",     val:"1"},
+  {p:1,name:"Puluh",  val:"10"},
+  {p:2,name:"Ratus",  val:"100"},
+  {p:3,name:"Ribu",   val:"1000"}
+];
+let freeOp="darab", straighten=false, curPlace=0, zeroMode=false;
+let strokes=[], strokeId=1, dotList=[], bDots=0;
 const inkC=$("ink"), inkX=inkC.getContext("2d"), dsvg=$("dsvg");
 let activePtr=null, rawPts=[], ptrStart=0, ptrMoved=0;
+
+/* ---- palette ---- */
+function buildPalette(){
+  const box=$("palette"); box.innerHTML="";
+  PLACES.forEach(pl=>{
+    const b=document.createElement("button");
+    b.className="pchip"; b.dataset.p=pl.p;
+    b.setAttribute("aria-pressed", pl.p===curPlace);
+    b.innerHTML='<span class="pdot" style="background:'+TINT[pl.p]+'"></span>'+
+                '<span class="pname">'+pl.name+'</span>'+
+                '<span class="pval">'+pl.val+'</span>';
+    b.onclick=()=>{ curPlace=pl.p; playTick(); refreshPalette(); };
+    box.appendChild(b);
+  });
+}
+function refreshPalette(){
+  document.querySelectorAll(".pchip").forEach(b=>
+    b.setAttribute("aria-pressed", Number(b.dataset.p)===curPlace));
+  $("zeroChip").setAttribute("aria-pressed",zeroMode?"true":"false");
+  $("zeroChip").style.color = zeroMode ? TINT[curPlace] : "";
+  $("zeroLbl").textContent = zeroMode
+    ? "Rumah "+PLACES[curPlace].name+" = 0 (putus-putus)"
+    : "Mod 0 — garisan putus-putus";
+}
+$("zeroChip").onclick=()=>{ zeroMode=!zeroMode; playTick(); refreshPalette(); };
 
 function setFreeOp(o){
   freeOp=o;
   $("fDarab").setAttribute("aria-pressed",o==="darab");
   $("fBahagi").setAttribute("aria-pressed",o==="bahagi");
   $("straightRow").style.display=o==="darab"?"":"none";
-  strokes=[];strokeId=1;dots=[];bDots=0;dsvg.innerHTML="";
+  strokes=[];strokeId=1;dotList=[];bDots=0;dsvg.innerHTML="";
   sizeInk(); redraw();
 }
 $("fDarab").onclick=()=>{playTick();setFreeOp("darab");};
@@ -1007,7 +1064,6 @@ function toLog(e){
   return {cx:e.clientX-r.left, cy:e.clientY-r.top,
           x:(e.clientX-r.left)/r.width*LOG, y:(e.clientY-r.top)/r.height*LOG};
 }
-
 inkC.addEventListener("pointerdown",e=>{
   if(activePtr!==null) return;
   activePtr=e.pointerId; ptrStart=Date.now(); ptrMoved=0;
@@ -1029,8 +1085,7 @@ function endPtr(e){
   inkX.clearRect(0,0,r.width,r.height);
   const pts=rawPts, moved=ptrMoved, dt=Date.now()-ptrStart;
   rawPts=[];
-  // tap = short + barely moved
-  if(moved<14 && dt<600){ onTap(pts[pts.length-1]); return; }
+  if(moved<14 && dt<600){ onTap(); return; }
   if(pts.length<2) return;
   commitStroke(pts);
 }
@@ -1040,15 +1095,15 @@ inkC.addEventListener("pointercancel",endPtr);
 function paintInk(){
   const r=inkC.getBoundingClientRect();
   inkX.clearRect(0,0,r.width,r.height);
-  inkX.lineJoin="round"; inkX.lineCap="round"; inkX.lineWidth=6; inkX.globalAlpha=.9;
-  inkX.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue("--dot").trim()||"#3B6BFF";
+  inkX.lineJoin="round"; inkX.lineCap="round"; inkX.lineWidth=6;
+  inkX.globalAlpha=zeroMode?.55:.9;
+  inkX.setLineDash(zeroMode?[9,9]:[]);
+  inkX.strokeStyle=TINT[curPlace];
   inkX.beginPath();
   rawPts.forEach((p,i)=> i===0?inkX.moveTo(p.cx,p.cy):inkX.lineTo(p.cx,p.cy));
   inkX.stroke();
 }
 
-/* straighten = replace path with a clean line between the two endpoints,
-   locked to the dominant axis so it reads as a proper tally mark */
 function straightenPts(raw){
   const a=raw[0], b=raw[raw.length-1];
   const dx=Math.abs(b.x-a.x), dy=Math.abs(b.y-a.y);
@@ -1061,14 +1116,20 @@ function ptsToPath(pts){
 function rebuildPath(s){ s.el.setAttribute("d",ptsToPath(s.pts)); }
 
 function commitStroke(raw){
-  if(strokes.length>=14){ toast("Dah cukup banyak garisan!"); return; }
+  if(strokes.length>=16){ toast("Dah cukup banyak garisan!"); return; }
   const pts = straighten ? straightenPts(raw) : raw.slice();
   const el0=el("path",{d:ptsToPath(pts),class:"gline",fill:"none"});
-  const len=pathLength(pts);
-  el0.style.strokeDasharray=len; el0.style.strokeDashoffset=len;
-  el0.classList.add("anim-line"); el0.style.setProperty("--d","0ms");
+  el0.style.stroke=TINT[curPlace];
+  if(zeroMode){
+    el0.style.strokeDasharray="9 9"; el0.style.opacity=".6";
+    el0.classList.add("anim-fade"); el0.style.setProperty("--d","0ms");
+  }else{
+    const len=pathLength(pts);
+    el0.style.strokeDasharray=len; el0.style.strokeDashoffset=len;
+    el0.classList.add("anim-line"); el0.style.setProperty("--d","0ms");
+  }
   dsvg.appendChild(el0);
-  strokes.push({id:strokeId++,raw:raw.slice(),pts,el:el0});
+  strokes.push({id:strokeId++,raw:raw.slice(),pts,el:el0,place:curPlace,zero:zeroMode});
   playPop();
   redraw();
 }
@@ -1077,7 +1138,7 @@ function pathLength(pts){
   return Math.max(L,1);
 }
 
-/* segment intersection */
+/* ---- geometry ---- */
 function segInt(p1,p2,p3,p4){
   const d=(p2.x-p1.x)*(p4.y-p3.y)-(p2.y-p1.y)*(p4.x-p3.x);
   if(Math.abs(d)<1e-9) return null;
@@ -1090,28 +1151,32 @@ function strokeIntersections(a,b){
   const found=[];
   for(let i=1;i<a.pts.length;i++)for(let j=1;j<b.pts.length;j++){
     const p=segInt(a.pts[i-1],a.pts[i],b.pts[j-1],b.pts[j]);
-    if(p){
-      // dedupe points that are basically the same crossing
-      if(!found.some(q=>Math.hypot(q.x-p.x,q.y-p.y)<10)) found.push(p);
-    }
+    if(p&&!found.some(q=>Math.hypot(q.x-p.x,q.y-p.y)<10)) found.push(p);
   }
   return found;
 }
 function computeDots(){
   const out=[];
   for(let i=0;i<strokes.length;i++)for(let j=i+1;j<strokes.length;j++){
+    if(strokes[i].zero||strokes[j].zero) continue;   // garisan putus-putus = 0
+    const place=strokes[i].place+strokes[j].place;
     strokeIntersections(strokes[i],strokes[j]).forEach(p=>{
-      if(!out.some(q=>Math.hypot(q.x-p.x,q.y-p.y)<10)) out.push(p);
+      if(!out.some(q=>Math.hypot(q.x-p.x,q.y-p.y)<10)) out.push({x:p.x,y:p.y,place});
     });
   }
   return out;
 }
+function isVertical(s){
+  let minX=Infinity,maxX=-Infinity,minY=Infinity,maxY=-Infinity;
+  s.pts.forEach(p=>{minX=Math.min(minX,p.x);maxX=Math.max(maxX,p.x);
+                    minY=Math.min(minY,p.y);maxY=Math.max(maxY,p.y);});
+  return (maxY-minY)>=(maxX-minX);
+}
 
-/* ---- tap: only meaningful in bahagi mode (adds a titik) ---- */
-function onTap(p){
+function onTap(){
   if(freeOp!=="bahagi"){ toast("Lukis garisan dengan jari 🖊️ — jangan ketik saja."); return; }
   if(strokes.length===0){ toast("Lukis garisan pembahagi dulu, baru letak titik."); return; }
-  if(bDots>=90){ toast("Dah cukup banyak titik!"); return; }
+  if(bDots>=80){ toast("Dah cukup banyak titik!"); return; }
   bDots++; playPop(); redraw();
 }
 
@@ -1120,23 +1185,62 @@ function redraw(){
   if(freeOp==="darab") redrawDarab(); else redrawBahagi();
 }
 
-function redrawDarab(){
-  dots=computeDots();
-  dots.forEach((p,i)=>{
-    dsvg.appendChild(el("circle",{cx:p.x,cy:p.y,r:6.5,class:"dot anim-dot",style:"--d:"+(i*35)+"ms"}));
+function houseTable(counts,total,caption,unitLabel){
+  const keys=Object.keys(counts).map(Number).sort((a,b)=>b-a);
+  if(keys.length===0) return "";
+  let tb="";
+  keys.forEach(p=>{
+    tb+='<tr><td><span class="sw" style="background:'+TINT[p%TINT.length]+'"></span>'+HOUSE_FULL[p]+
+        '</td><td>'+counts[p]+' '+unitLabel+'</td><td>'+
+        (counts[p]*Math.pow(10,p)).toLocaleString("en-US")+'</td></tr>';
   });
-  $("freeAnsVal").textContent=dots.length;
-  $("dHint").style.color="";
-  if(strokes.length===0) $("dHint").innerHTML="Lukis garisan dengan jari — di mana garisan bersilang, satu titik terbentuk.";
-  else if(dots.length===0) $("dHint").innerHTML="Garisan belum bersilang. Cuba lukis garisan yang memotong garisan tadi.";
-  else $("dHint").innerHTML=strokes.length+" garisan bersilang sebanyak <b>"+dots.length+"</b> kali = <b>"+dots.length+"</b> titik.";
+  tb+='<tr class="sum"><td>Jumlah</td><td></td><td>'+total.toLocaleString("en-US")+'</td></tr>';
+  return '<table class="tbl"><caption>'+caption+'</caption>'+
+         '<tr><th>Rumah angka</th><th>Titik</th><th>Nilai</th></tr>'+tb+'</table>';
 }
 
-/* bahagi: strokes are the pembahagi lines; taps drop titik that sit ON the
-   drawn lines, filling row by row — leftover dots are the baki */
+function redrawDarab(){
+  dotList=computeDots();
+  const counts={}; let total=0;
+  dotList.forEach((d,i)=>{
+    counts[d.place]=(counts[d.place]||0)+1;
+    total+=Math.pow(10,d.place);
+    const c=el("circle",{cx:d.x,cy:d.y,r:6.5,class:"dot anim-dot",style:"--d:"+(i*32)+"ms"});
+    c.style.fill=TINT[d.place%TINT.length];
+    dsvg.appendChild(c);
+  });
+
+  // what number did the child actually draw? (vertical family × horizontal family)
+  let A=0,B=0;
+  strokes.forEach(s=>{ if(s.zero) return;
+    if(isVertical(s)) A+=Math.pow(10,s.place); else B+=Math.pow(10,s.place); });
+
+  $("freeQ").textContent = (A>0&&B>0) ? (A+" × "+B+" =") : "Jawapan";
+  $("freeAnsVal").textContent=total.toLocaleString("en-US");
+  $("dHint").style.color="";
+  $("freeBreak").innerHTML = dotList.length
+    ? houseTable(counts,total,"Jadual kiraan titik","titik")
+    : "";
+
+  if(strokes.length===0){
+    $("dHint").innerHTML="Pilih warna rumah angka, kemudian lukis garisan dengan jari.";
+  }else if(dotList.length===0){
+    $("dHint").innerHTML="Garisan belum bersilang. Lukis garisan arah bertentangan supaya bersilang.";
+  }else if(A>0&&B>0&&total!==A*B){
+    $("dHint").innerHTML="⚠️ Kamu lukis <b>"+A+" × "+B+"</b> = "+(A*B)+
+      ", tapi titik cuma "+total+". Ada garisan belum bersilang — panjangkan sikit.";
+    $("dHint").style.color="var(--hot)";
+  }else{
+    $("dHint").innerHTML="Warna bercampur: <b>"+HOUSE_FULL[1]+" × "+HOUSE_FULL[1]+" = "+HOUSE_FULL[2]+
+      "</b>. Semua "+dotList.length+" titik dijumlah ikut rumahnya.";
+  }
+}
+
+/* bahagi: garisan = pembahagi (nilai ikut warna), ketik = letak titik.
+   Satu baris penuh merentas semua garisan = nilai pembahagi.
+   Titik yang tak cukup satu baris = baki, bernilai ikut warna garisannya. */
 function xAtY(s,y){
-  const pts=s.pts;
-  let best=null,bestD=Infinity;
+  const pts=s.pts; let best=null,bestD=Infinity;
   for(let i=1;i<pts.length;i++){
     const a=pts[i-1],b=pts[i];
     const lo=Math.min(a.y,b.y),hi=Math.max(a.y,b.y);
@@ -1148,38 +1252,58 @@ function xAtY(s,y){
   return best!==null?best:pts[0].x;
 }
 function redrawBahagi(){
-  const cols=strokes.map(s=>({s,mx:s.pts.reduce((t,p)=>t+p.x,0)/s.pts.length}))
-                    .sort((a,b)=>a.mx-b.mx).map(o=>o.s);
+  // highest place goes leftmost, matching the book's rumah order
+  const cols=strokes.filter(s=>!s.zero).sort((a,b)=> b.place-a.place ||
+      (a.pts.reduce((t,p)=>t+p.x,0)/a.pts.length) - (b.pts.reduce((t,p)=>t+p.x,0)/b.pts.length));
   const n=cols.length;
+  $("freeBreak").innerHTML="";
   if(n===0){
+    if(strokes.length>0){
+      $("freeQ").textContent="Pembahagi";
+      $("freeAnsVal").textContent="0";
+      $("dHint").style.color="";
+      $("dHint").innerHTML="Garisan putus-putus bernilai 0. Lukis garisan penuh untuk jadi pembahagi.";
+      return;
+    }
+    $("freeQ").textContent="Jawapan";
     $("freeAnsVal").textContent="0";
     $("dHint").style.color="";
-    $("dHint").innerHTML="Lukis beberapa garisan menegak = <b>pembahagi</b>. Kemudian ketik untuk letak titik.";
+    $("dHint").innerHTML="Lukis garisan pembahagi — warna menentukan nilainya. Kemudian ketik untuk letak titik.";
     return;
   }
+  const D=cols.reduce((s,c)=>s+Math.pow(10,c.place),0);
   const full=Math.floor(bDots/n), rem=bDots%n;
+  const remVal=cols.slice(0,rem).reduce((s,c)=>s+Math.pow(10,c.place),0);
+  const dividend=full*D+remVal;
+
   const rowsN=full+(rem>0?1:0);
-  const yTop=44, avail=LOG-yTop-30;
-  const ROW=rowsN>1?Math.min(34,avail/(rowsN-1)):34;
+  const yTop=42, avail=LOG-yTop-28;
+  const ROW=rowsN>1?Math.min(32,avail/(rowsN-1)):32;
 
   let k=0;
   for(let r=0;r<full;r++){
     const y=yTop+r*ROW;
     cols.forEach(s=>{
-      dsvg.appendChild(el("circle",{cx:xAtY(s,y),cy:y,r:6.5,class:"dot anim-dot",style:"--d:"+(k*25)+"ms"}));k++;
+      const c=el("circle",{cx:xAtY(s,y),cy:y,r:6.5,class:"dot anim-dot",style:"--d:"+(k*22)+"ms"});
+      c.style.fill=TINT[s.place%TINT.length];
+      dsvg.appendChild(c);k++;
     });
   }
   if(rem>0){
     const y=yTop+full*ROW;
-    for(let c=0;c<rem;c++){
-      dsvg.appendChild(el("circle",{cx:xAtY(cols[c],y),cy:y,r:6.5,class:"dot rest anim-dot",style:"--d:"+(k*25)+"ms"}));k++;
+    for(let c2=0;c2<rem;c2++){
+      const c=el("circle",{cx:xAtY(cols[c2],y),cy:y,r:6.5,class:"dot rest anim-dot",style:"--d:"+(k*22)+"ms"});
+      dsvg.appendChild(c);k++;
     }
   }
-  $("freeAnsVal").textContent=full+(rem?" baki "+rem:"");
+
+  $("freeQ").textContent = bDots>0 ? (dividend+" ÷ "+D+" =") : "Pembahagi";
+  $("freeAnsVal").textContent = bDots>0 ? (full+(remVal?" baki "+remVal:"")) : D;
   $("dHint").style.color="";
-  $("dHint").innerHTML=bDots===0
-    ? "<b>"+n+"</b> garisan pembahagi siap. Ketik ruang lukisan untuk letak titik."
-    : bDots+" titik ÷ "+n+" garisan = <b>"+full+"</b>"+(rem?" baki <b>"+rem+"</b>":"")+".";
+  $("dHint").innerHTML = bDots===0
+    ? "Pembahagi = <b>"+D+"</b> ("+n+" garisan). Ketik ruang lukisan untuk letak titik."
+    : full+" baris penuh × "+D+" = "+(full*D)+(remVal?", baki <b>"+remVal+"</b>":"")+
+      " → jumlah "+dividend+".";
 }
 
 function toast(text){
@@ -1195,15 +1319,23 @@ $("dUndo").onclick=()=>{
   s.el.remove(); playTick(); redraw();
 };
 $("dClear").onclick=()=>{
-  strokes=[];strokeId=1;dots=[];bDots=0;dsvg.innerHTML="";
+  strokes=[];strokeId=1;dotList=[];bDots=0;dsvg.innerHTML="";
   playTick(); redraw();
 };
 $("fSave").onclick=()=>{
   let label=null;
-  if(freeOp==="darab"&&dots.length>0) label=strokes.length+" garisan → "+dots.length+" titik · Lukis Bebas";
-  else if(freeOp==="bahagi"&&bDots>0&&strokes.length>0){
-    const n=strokes.length, full=Math.floor(bDots/n), rem=bDots%n;
-    label=bDots+" ÷ "+n+" = "+full+(rem?" baki "+rem:"")+" · Lukis Bebas";
+  if(freeOp==="darab"&&dotList.length>0){
+    let A=0,B=0;
+    strokes.forEach(s=>{ if(s.zero) return;
+      if(isVertical(s)) A+=Math.pow(10,s.place); else B+=Math.pow(10,s.place); });
+    const total=dotList.reduce((s,d)=>s+Math.pow(10,d.place),0);
+    label=(A>0&&B>0? A+" × "+B+" = ":"")+total.toLocaleString("en-US")+" · Lukis Bebas";
+  }else if(freeOp==="bahagi"&&bDots>0&&strokes.length>0){
+    const cols=strokes.filter(s=>!s.zero).sort((a,b)=>b.place-a.place);
+    const n=cols.length, D=cols.reduce((s,c)=>s+Math.pow(10,c.place),0);
+    const full=Math.floor(bDots/n), rem=bDots%n;
+    const remVal=cols.slice(0,rem).reduce((s,c)=>s+Math.pow(10,c.place),0);
+    label=(full*D+remVal)+" ÷ "+D+" = "+full+(remVal?" baki "+remVal:"")+" · Lukis Bebas";
   }
   if(!label) return toast("Lukis sesuatu dulu sebelum simpan.");
   addHistory({kind:"lukis",label});
@@ -1215,6 +1347,7 @@ $("fSave").onclick=()=>{
 
 /* ---------- init ---------- */
 setMode("darab");
+buildPalette();
 setFreeOp("darab");
 updateStatChip();
 setView("kira");
